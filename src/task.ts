@@ -11,9 +11,10 @@ export abstract class Task {
 	abstract notice: string;
 
 	async run() {
+		console.log(`run() ${this.notice}`);
 		const loadingNotice = Task.buildLoadingNotice(this.notice);
 		try {
-			await this._run();
+			this._run();
 			loadingNotice.hide();
 		} catch (err) {
 			loadingNotice.hide();
