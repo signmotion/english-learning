@@ -135,7 +135,7 @@ export class ViewManager {
 		content: string,
 		replaceIfExists = false
 	) {
-		this.createNote(title, content, "md");
+		await this.createNote(title, content, "md", replaceIfExists);
 	}
 
 	async createNote(
@@ -167,11 +167,11 @@ export class ViewManager {
 		this.app.vault
 			.create(fullpath, `${s}\n`)
 			.then((newNote: TFile) => {
-				console.log(`File ${filename} created`);
+				console.log(`File '${filename}' created`);
 			})
 			.catch((error: unknown) => {
 				console.log(`!) ${error}`);
-				new Notice(`Couldn't create new note: ${filename}.`, 5000);
+				new Notice(`Couldn't create new note: '${filename}'.`, 5000);
 				new Notice(`!) ${error}`, 5000);
 			});
 	}
