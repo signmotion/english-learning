@@ -130,16 +130,36 @@ export class ViewManager {
 		return this.app.workspace.getActiveFile()?.parent?.path ?? "";
 	}
 
-	async createNote(title: string, content: string) {
+	async createNoteMd(
+		title: string,
+		content: string,
+		replaceIfExists = false
+	) {
+		this.createNote(title, content, "md");
+	}
+
+	async createNote(
+		title: string,
+		content: string,
+		extension: string,
+		replaceIfExists = false
+	) {
 		const baseFilename = title;
-		const filename = `${baseFilename}.md`;
+		let filename = `${baseFilename}`;
+		if (extension != null && extension.length > 0) {
+			filename += `.${extension}`;
+		}
 		const fullpath = `${this.getCurrentFolderLink()}/${filename}`;
 		if (await this.app.vault.adapter.exists(fullpath)) {
-			new Notice(
-				`'${fullpath}'\nThe note already exists. Skip it.`,
-				2000
-			);
-			return;
+			if (replaceIfExists) {
+				console.log(
+					`'${fullpath}'\nThe note already exists. Replacing it...`
+				);
+				await this.app.vault.adapter.remove(fullpath);
+			} else {
+				console.log(`'${fullpath}'\nThe note already exists. Skip it.`);
+				return;
+			}
 		}
 
 		const s = content.trim();
@@ -150,6 +170,7 @@ export class ViewManager {
 				console.log(`File ${filename} created`);
 			})
 			.catch((error: unknown) => {
+				console.log(`!) ${error}`);
 				new Notice(`Couldn't create new note: ${filename}.`, 5000);
 				new Notice(`!) ${error}`, 5000);
 			});

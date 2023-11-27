@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ViewManager } from "src/view-manager";
 import { Task } from "./task";
 import { requestUrl } from "obsidian";
@@ -14,20 +15,44 @@ export class PhrasalVerbs extends Task {
 		const input = (await this.viewManager.getContent()) ?? "";
 		console.log(`_run() input ${input.substring(0, 120)}`);
 
-		// requesting phrasal verbs by content
+		console.log("Requesting phrasal verbs by content...");
 		const answer = await this.request(input);
 		console.log(answer);
 
-		// create notes with phrasal verbs consider to answer
+		console.log("reate notes with phrasal verbs consider to answer...");
 		for (const [first, second] of Object.entries(answer)) {
-			console.log(`${first} -> ${second}`);
-			this.viewManager.createNote(first, second);
+			//console.log(`${first} -> ${second}`);
+			await this.viewManager.createNoteMd(first, second);
 		}
 
-		console.log(this.viewManager.getCurrentFileLink());
+		console.log(this.viewManager.app.workspace.getActiveFile()?.basename);
 
-		// linking the source to the created notes
-		// TODO
+		console.log("Linking the source to the created notes...");
+		let newContent = input;
+		let lowercaseContent = newContent.toLowerCase();
+		for (const first of Object.keys(answer)) {
+			// [first] always in lowercase
+			for (let q = 0; ; ) {
+				const i = lowercaseContent.indexOf(first, q);
+				if (i == -1) {
+					break;
+				}
+
+				if (i > 0 && lowercaseContent[i - 1] != "[") {
+					// linking [first]
+					const before = newContent.substring(i, -12);
+					const after = newContent.substring(i + first.length);
+					newContent = `${before}[[${first}]]${after}`;
+					lowercaseContent = newContent.toLowerCase();
+				}
+
+				q = i + first.length + "[[]]".length;
+			}
+		}
+
+		const title = `!`;
+		console.log(`Constructing a new note '${title}'...`);
+		await this.viewManager.createNoteMd(title, newContent, true);
 	}
 
 	async request(text: string): Promise<string> {
