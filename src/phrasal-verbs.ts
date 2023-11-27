@@ -18,7 +18,7 @@ export class PhrasalVerbs extends Task {
 
 		const answer = await this.contentFromSourceNote(input);
 		await this.constructNotesByAnswer(answer);
-		const newContent = await this.linkSourceToCreatedNotes(input, answer);
+		const newContent = await this.addLinksToSource(input, answer);
 		await this.constructNewNote(newContent);
 	}
 
@@ -29,12 +29,40 @@ export class PhrasalVerbs extends Task {
 
 		console.log("Requesting phrasal verbs by content...");
 		const answer = await this.request(content);
-		console.log(answer);
+		const siftedAnswer = this.siftAnswerBySource(content, answer);
+		console.log(siftedAnswer);
 
-		return answer;
+		return siftedAnswer;
 	}
 
-	async linkSourceToCreatedNotes(
+	siftAnswerBySource(
+		content: string,
+		answer: Record<string, string>
+	): Record<string, string> {
+		// TODO Be able to look for inaccurate matches.
+		console.log("Removing inexact matches...");
+		const r: Record<string, string> = {};
+
+		const lowercaseContent = content.toLowerCase();
+		for (const [first, second] of Object.entries(answer)) {
+			// [first] always in lowercase
+			if (lowercaseContent.indexOf(first) != -1) {
+				r[first] = second;
+			}
+		}
+
+		return r;
+	}
+
+	async constructNotesByAnswer(answer: Record<string, string>) {
+		console.log("Construct notes with phrasal verbs consider to answer...");
+		for (const [first, second] of Object.entries(answer)) {
+			//console.log(`${first} -> ${second}`);
+			await this.viewManager.createNoteMd(first, second);
+		}
+	}
+
+	async addLinksToSource(
 		content: string,
 		answer: Record<string, string>
 	): Promise<string> {
@@ -62,14 +90,6 @@ export class PhrasalVerbs extends Task {
 		}
 
 		return newContent;
-	}
-
-	async constructNotesByAnswer(answer: Record<string, string>) {
-		console.log("Construct notes with phrasal verbs consider to answer...");
-		for (const [first, second] of Object.entries(answer)) {
-			//console.log(`${first} -> ${second}`);
-			await this.viewManager.createNoteMd(first, second);
-		}
 	}
 
 	async constructNewNote(newContent: string) {
