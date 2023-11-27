@@ -162,10 +162,8 @@ export class ViewManager {
 			}
 		}
 
-		const s = content.trim();
-
 		this.app.vault
-			.create(fullpath, `${s}\n`)
+			.create(fullpath, `${content}\n`)
 			.then((newNote: TFile) => {
 				console.log(`File '${filename}' created`);
 			})

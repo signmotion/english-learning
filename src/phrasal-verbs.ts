@@ -11,14 +11,17 @@ export class PhrasalVerbs extends Task {
 	notice = "🕛 Getting phrasal verbs...";
 
 	async _run() {
-		console.log(this.viewManager.app.workspace.getActiveFile()?.basename);
+		const source = this.viewManager.app.workspace.getActiveFile()?.basename;
+		console.log(source);
 
 		const input = (await this.viewManager.getContent()) ?? "";
 		console.log(`_run() input ${input.substring(0, 120)}`);
 
 		const answer = await this.contentFromSourceNote(input);
 		await this.constructNotesByAnswer(answer);
-		const newContent = await this.addLinksToSource(input, answer);
+
+		let newContent = await this.addLinksToSource(input, answer);
+		newContent = `\n[[${source}|SOURCE]]\n\n${newContent}`;
 		await this.constructNewNote(newContent);
 	}
 
