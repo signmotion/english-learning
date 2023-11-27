@@ -21,10 +21,12 @@ export class PhrasalVerbs extends Task {
 		// create notes with phrasal verbs consider to answer
 		for (const [first, second] of Object.entries(answer)) {
 			console.log(`${first} -> ${second}`);
-			// TODO
+			this.viewManager.createNote(first, second);
 		}
 
-		// linking the source to created notes 
+		console.log(this.viewManager.getCurrentFileLink());
+
+		// linking the source to the created notes
 		// TODO
 	}
 

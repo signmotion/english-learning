@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { App, MarkdownView, Editor, FrontMatterCache } from "obsidian";
+import {
+	App,
+	MarkdownView,
+	Editor,
+	FrontMatterCache,
+	Notice,
+	TFile,
+} from "obsidian";
 
 export class ViewManager {
 	constructor(app: App) {
@@ -113,5 +120,38 @@ export class ViewManager {
 
 	preprocessOutput(value: string): string {
 		return value;
+	}
+
+	getCurrentFileLink(): string {
+		return this.app.workspace.getActiveFile()?.path ?? "";
+	}
+
+	getCurrentFolderLink(): string {
+		return this.app.workspace.getActiveFile()?.parent?.path ?? "";
+	}
+
+	async createNote(title: string, content: string) {
+		const baseFilename = title;
+		const filename = `${baseFilename}.md`;
+		const fullpath = `${this.getCurrentFolderLink()}/${filename}`;
+		if (await this.app.vault.adapter.exists(fullpath)) {
+			new Notice(
+				`'${fullpath}'\nThe note already exists. Skip it.`,
+				2000
+			);
+			return;
+		}
+
+		const s = content.trim();
+
+		this.app.vault
+			.create(fullpath, `${s}\n`)
+			.then((newNote: TFile) => {
+				console.log(`File ${filename} created`);
+			})
+			.catch((error: unknown) => {
+				new Notice(`Couldn't create new note: ${filename}.`, 5000);
+				new Notice(`!) ${error}`, 5000);
+			});
 	}
 }

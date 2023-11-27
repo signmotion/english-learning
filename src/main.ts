@@ -12,7 +12,7 @@ export default class LearnEnglishPlugin extends Plugin {
 			"English Learning",
 			async () => {
 				console.log(
-					"The plugin installed. See commands `English Learning`."
+					"The plugin installed. See commands `English Learning: *`."
 				);
 			}
 		);
