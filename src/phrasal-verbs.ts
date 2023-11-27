@@ -11,24 +11,35 @@ export class PhrasalVerbs extends Task {
 	notice = "🕛 Getting phrasal verbs...";
 
 	async _run() {
-		// getting content from source note
+		console.log(this.viewManager.app.workspace.getActiveFile()?.basename);
+
 		const input = (await this.viewManager.getContent()) ?? "";
 		console.log(`_run() input ${input.substring(0, 120)}`);
 
+		const answer = await this.contentFromSourceNote(input);
+		await this.constructNotesByAnswer(answer);
+		const newContent = await this.linkSourceToCreatedNotes(input, answer);
+		await this.constructNewNote(newContent);
+	}
+
+	async contentFromSourceNote(
+		content: string
+	): Promise<Record<string, string>> {
+		console.log("Getting content from source note...");
+
 		console.log("Requesting phrasal verbs by content...");
-		const answer = await this.request(input);
+		const answer = await this.request(content);
 		console.log(answer);
 
-		console.log("reate notes with phrasal verbs consider to answer...");
-		for (const [first, second] of Object.entries(answer)) {
-			//console.log(`${first} -> ${second}`);
-			await this.viewManager.createNoteMd(first, second);
-		}
+		return answer;
+	}
 
-		console.log(this.viewManager.app.workspace.getActiveFile()?.basename);
-
+	async linkSourceToCreatedNotes(
+		content: string,
+		answer: Record<string, string>
+	): Promise<string> {
 		console.log("Linking the source to the created notes...");
-		let newContent = input;
+		let newContent = content;
 		let lowercaseContent = newContent.toLowerCase();
 		for (const first of Object.keys(answer)) {
 			// [first] always in lowercase
@@ -50,12 +61,24 @@ export class PhrasalVerbs extends Task {
 			}
 		}
 
+		return newContent;
+	}
+
+	async constructNotesByAnswer(answer: Record<string, string>) {
+		console.log("Construct notes with phrasal verbs consider to answer...");
+		for (const [first, second] of Object.entries(answer)) {
+			//console.log(`${first} -> ${second}`);
+			await this.viewManager.createNoteMd(first, second);
+		}
+	}
+
+	async constructNewNote(newContent: string) {
 		const title = `!`;
 		console.log(`Constructing a new note '${title}'...`);
 		await this.viewManager.createNoteMd(title, newContent, true);
 	}
 
-	async request(text: string): Promise<string> {
+	async request(text: string): Promise<Record<string, string>> {
 		const baseUrl = "http://127.0.0.1:8000/";
 		const headers = {
 			"Content-Type": "application/json",
