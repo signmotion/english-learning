@@ -10,17 +10,22 @@ export class PhrasalVerbs extends Task {
 	notice = "🕛 Getting phrasal verbs...";
 
 	async _run() {
+		// getting content from source note
 		const input = (await this.viewManager.getContent()) ?? "";
 		console.log(`_run() input ${input.substring(0, 120)}`);
 
+		// requesting phrasal verbs by content
 		const answer = await this.request(input);
 		console.log(answer);
 
-		// create notes consider to answer
+		// create notes with phrasal verbs consider to answer
 		for (const [first, second] of Object.entries(answer)) {
 			console.log(`${first} -> ${second}`);
 			// TODO
 		}
+
+		// linking the source to created notes 
+		// TODO
 	}
 
 	async request(text: string): Promise<string> {
