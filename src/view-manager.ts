@@ -130,6 +130,10 @@ export class ViewManager {
 		return this.app.workspace.getActiveFile()?.parent?.path ?? "";
 	}
 
+	safetyFilename(title: string): string {
+		return title.replace(/[|&/\\#,\+-()\$~%\^'":\*\?\!<>{}]/g, "_");
+	}
+
 	async createNoteMd(
 		title: string,
 		content: string,
@@ -144,7 +148,7 @@ export class ViewManager {
 		extension: string,
 		replaceIfExists = false
 	) {
-		const baseFilename = title;
+		const baseFilename = this.safetyFilename(title);
 		let filename = `${baseFilename}`;
 		if (extension != null && extension.length > 0) {
 			filename += `.${extension}`;
