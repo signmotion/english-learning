@@ -9,7 +9,7 @@ export class Speech extends Task {
 	notice = "🕛 Voicing the paragraph...";
 
 	async _run() {
-		let input = await this.viewManager.getContent();
+		let input = await this.viewManager.getContentFromActiveNote();
 		const insert = `${this.notice} ${input?.length} characters\n`;
 		input = input?.replace(insert, "") ?? "";
 		this.viewManager.insertAtCursor(insert);

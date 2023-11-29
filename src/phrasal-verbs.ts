@@ -11,10 +11,11 @@ export class PhrasalVerbs extends Task {
 	notice = "🕛 Getting phrasal verbs...";
 
 	async _run() {
-		const source = this.viewManager.app.workspace.getActiveFile()?.basename;
+		const source =
+			this.viewManager.app.workspace.getActiveFile()?.basename ?? "";
 		console.log(source);
 
-		const input = (await this.viewManager.getContent()) ?? "";
+		const input = (await this.viewManager.getContentFromActiveNote()) ?? "";
 		console.log(`_run() input ${input.substring(0, 120)}`);
 
 		const answer = await this.contentFromSourceNote(input);
@@ -22,7 +23,7 @@ export class PhrasalVerbs extends Task {
 
 		let newContent = await this.addLinksToSource(input, answer);
 		newContent = `\n[[${source}|SOURCE]]\n\n${newContent}`;
-		await this.constructNewNote(newContent);
+		await this.constructNewNote(source, newContent);
 	}
 
 	async contentFromSourceNote(content: string): Promise<Map<string, string>> {
@@ -113,8 +114,8 @@ export class PhrasalVerbs extends Task {
 		return newContent;
 	}
 
-	async constructNewNote(newContent: string) {
-		const title = `!`;
+	async constructNewNote(source: string, newContent: string) {
+		const title = `!${source.replace("_", "")}`;
 		console.log(`Constructing a new note '${title}'...`);
 		await this.viewManager.createNoteMd(title, newContent, true);
 	}
@@ -125,25 +126,32 @@ export class PhrasalVerbs extends Task {
 			"Content-Type": "application/json",
 		};
 
-		// set languages
-		console.log(`request() set languages`);
+		// set context for request
+		console.log(`request() set native language`);
 		await requestUrl({
-			url: `${baseUrl}languages`,
-			method: "POST",
+			url: `${baseUrl}languages/native`,
+			method: "PUT",
 			headers: headers,
-			body: JSON.stringify({ first: "en", second: "uk" }),
+			body: JSON.stringify({ value: "uk" }),
 		});
 
-		// TODO set text
+		console.log(`request() set target language`);
+		await requestUrl({
+			url: `${baseUrl}languages/target`,
+			method: "PUT",
+			headers: headers,
+			body: JSON.stringify({ value: "en" }),
+		});
+
 		console.log(`request() set text`);
 		await requestUrl({
 			url: `${baseUrl}text`,
-			method: "POST",
+			method: "PUT",
 			headers: headers,
 			body: JSON.stringify({ value: text }),
 		});
 
-		// get phrasal verbs
+		// get extracted from [text] phrasal verbs
 		console.log(`request() get phrasal verbs`);
 		const response = await requestUrl({
 			url: `${baseUrl}phrasal-verbs`,

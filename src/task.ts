@@ -14,17 +14,17 @@ export abstract class Task {
 		console.log(`run() ${this.notice}`);
 		const loadingNotice = Task.buildLoadingNotice(this.notice);
 		try {
-			this._run();
+			await this._run();
 			loadingNotice.hide();
 		} catch (err) {
 			loadingNotice.hide();
 		}
 	}
 
-	abstract _run(): void;
+	async _run() {}
 
 	// Create loading spin in the Notice message.
-	static buildLoadingNotice(text: string, number = 2000): Notice {
+	static buildLoadingNotice(text: string, number = 60000): Notice {
 		const notice = new Notice("", number);
 		const loadingContainer = document.createElement("div");
 		loadingContainer.addClass("loading-container");

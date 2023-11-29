@@ -34,7 +34,7 @@ export class ViewManager {
 		return null;
 	}
 
-	async getContent(): Promise<string | null> {
+	async getContentFromActiveNote(): Promise<string | null> {
 		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (activeView) {
 			// delete frontmatter
